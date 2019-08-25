@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="title">
+            <div>
+                <h1>空氣品質指標-AQI</h1>
+            </div>
+            <div>
+                <select class="show">
+                    <option value="">---請選擇----</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <table>
+                　<tr>
+                    <td bgcolor="limegreen">0~50</td>
+                    <td bgcolor="gold">51~100</td>
+                    <td bgcolor="orange">101~150</td>
+                    <td bgcolor="red">151~200</td>
+                    <td bgcolor="dodgerblue">201~300</td>
+                    <td bgcolor="orchid">301~400</td>
+                    　
+                </tr>
+                <tr>
+                    <td>良好</td>
+                    <td>普通</td>
+                    <td>對敏感族群不健康</td>
+                    <td>對所有族群不健康</td>
+                    <td>非常不健康</td>
+                    <td>危害</td>
+                </tr>
+            </table>
+        </div>
+
+
+
+    </div>
+    <div class="container" style="height: 50px">
+        <span  class="County"></span>
+        <span  class="update "></span>
+    </div>
+
+    <div class="container content mx-auto mt-1">
+
+    </div>
+
+
+    <script src="jquery.js"></script>
+    <script>
+        $.ajax({
+            type: "GET",
+            url: "https://cors-anywhere.herokuapp.com/opendata.epa.gov.tw/webapi/Data/REWIQA/?$orderby=SiteName&$skip=0&$top=1000&format=json",
+            dataType: "json",
+            success: function (e) {
+                console.log(e);
+
+                var result = [];
+                for (let i = 0; i < e.length; i++) {
+                    result[i] = e[i].County
+                }
+
+                console.log(result);
+
+                var right = Array.from(new Set(result));
+
+                let text = '<option value="">---請選擇----</option>';
+                for (let i = 0; i < right.length; i++) {
+                    text += `<option value="${right[i]}">${right[i]}</option>`
+                }
+
+                $(".show").html(text);
+
+                $(document).on("change", '.show', function () {
+                    var select = $(".show").val();
+                    let beselect = e.filter(function (value) {
+                        return value.County === select
+                    });
+                    var update = '|'+'更新時間：'+e[0].PublishTime;
+
+                    let text = '';
+
+                    for (let i = 0; i < beselect.length; i++) {
+                        if (beselect[i].AQI == "") {
+                            a = "gray";
+                        } else if (beselect[i].AQI <= 100) {
+                            a = "limegreen";
+                        } else if (beselect[i].AQI <= 100) {
+                            a = "gold";
+                        } else if (beselect[i].AQI <= 150) {
+                            a = "orange";
+                        } else if (beselect[i].AQI <= 200) {
+                            a = "red";
+                        } else if (beselect[i].AQI <= 300) {
+                            a = "orchid";
+                        }
+
+                        text += `<table class="aqi">`
+                        text += `<tr>`
+                        text += `<td id="${beselect[i]}"><b>地區</b></td>`
+                        text += `<td id="${beselect[i].SiteName}" ><b>${beselect[i].SiteName}</b></td>`
+                        text += `</tr>`
+                        text += `<tr>`
+                        text += `<td bgcolor="${a}">${beselect[i].Status}</td>`
+                        text += `<td bgcolor="${a}" >${beselect[i].AQI}</td>`
+                        text += `</tr>`
+                        text += `<tr>`
+                        text += `<td id="${beselect[i]}">懸浮微粒μg／m3</td>`
+                        text += `<td id="${beselect[i]}">${beselect[i].PM10}</td>`
+                        text += `</tr>`
+                        text += `<tr>`
+                        text += `<td id="${beselect[i]}">二氧化硫ppb</td>`
+                        text += `<td id="${beselect[i]}">${beselect[i].SO2}</td>`
+                        text += `</tr>`
+                        text += `<tr>`
+                        text += `<td id="${beselect[i]}">一氧化碳ppm</td>`
+                        text += `<td id="${beselect[i]}">${beselect[i].CO}</td>`
+                        text += `</tr>`
+                        text += `</table>`
+                    }
+                    $(".County").html(select);
+                    $(".content").html(text);
+                    $(".update").html(update);
+                    console.log(beselect);
+                    console.log(update);
+                })
+            }
+        })
+    </script>
+
+
+
+</body>
+
+</html>
